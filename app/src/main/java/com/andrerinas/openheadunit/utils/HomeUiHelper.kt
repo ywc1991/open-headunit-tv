@@ -388,7 +388,9 @@ object HomeUiHelper {
                     val shine = startTileShine(tile, withAlpha(color, TILE_SHINE_ALPHA), radius)
                     paintTile(tile, if (shine != null) LayerDrawable(arrayOf(frame, shine)) else frame, palette.text, palette.text)
                 }
-                TileState.IDLE -> paintTile(tile, tileBackground(context, palette), palette.text, palette.text)
+                // Idle: a neutral tile with the connection's icon in its own color, the way an
+                // iOS settings row carries a colored glyph.
+                TileState.IDLE -> paintTile(tile, tileBackground(context, palette), color, palette.text)
             }
             if (state != TileState.CONNECTING) stopTileShine(tile)
         }

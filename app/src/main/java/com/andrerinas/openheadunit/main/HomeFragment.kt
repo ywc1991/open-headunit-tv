@@ -2784,11 +2784,11 @@ class HomeFragment : Fragment() {
                     }
                     NativeDriverSelectionPolicy.DriverPresence.DISCONNECTED -> {
                         statusView.text = context.getString(R.string.driver_device_disconnected)
-                        statusView.setTextColor(Color.LTGRAY)
+                        statusView.setTextColor(ContextCompat.getColor(context, R.color.md_on_surface_variant))
                     }
                     NativeDriverSelectionPolicy.DriverPresence.UNKNOWN -> {
                         statusView.text = context.getString(R.string.driver_device_paired)
-                        statusView.setTextColor(Color.LTGRAY)
+                        statusView.setTextColor(ContextCompat.getColor(context, R.color.md_on_surface_variant))
                     }
                 }
 
