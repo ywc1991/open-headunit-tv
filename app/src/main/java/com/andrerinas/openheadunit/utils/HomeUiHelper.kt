@@ -329,12 +329,12 @@ object HomeUiHelper {
             label?.setTextColor(palette.text)
         } else {
             val radius = context.resources.getDimension(R.dimen.home_tile_radius)
-            val dash = dp(context, 8).toFloat()
-            val gap = dp(context, 6).toFloat()
+            // An empty slot is the same card as a filled one, only with a muted "+": iOS has no
+            // dashed placeholders, and the outline read as a drop zone rather than a button.
             slot.background = pressable(
                 palette.ripple,
-                { shape(palette.panel, radius, palette.slotStroke, dp(context, 2), dash, gap) },
-                { shape(palette.tilePressed, radius, palette.slotStroke, dp(context, 2), dash, gap) }
+                { shape(palette.tile, radius, palette.tileStroke, dp(context, 1)) },
+                { shape(palette.tilePressed, radius, palette.tileStroke, dp(context, 1)) }
             )
             icon?.setColorFilter(palette.textMuted, PorterDuff.Mode.SRC_IN)
             icon?.alpha = 1f
@@ -606,31 +606,10 @@ object HomeUiHelper {
         val cancelRadius = resources.getDimension(R.dimen.home_secondary_cta_height) / 2f
         val iconTile = rootView.findViewById<View>(R.id.home_primary_icon_tile)
 
-        if (!palette.isDark) {
-            // Day: the whole card wears the connection's color, as see-through as the panels.
-            val shade = ColorUtils.darkenColor(color, 0.78f)
-            card.background = rounded(palette.fill(color), panelRadius)
-            iconTile?.background = rounded(palette.fill(shade), tileRadius)
-            icon?.clearColorFilter()
-            listOf(kicker, title, subtitle, detail).forEach { it?.setTextColor(Color.WHITE) }
-            action?.apply {
-                // White with a breath of the connection's color, so it belongs to the card.
-                background = pressable(blend(Color.WHITE, color, ACTION_TINT), ctaRadius, palette)
-                val labelColor = ColorUtils.darkenColor(color, 0.66f)
-                setTextColor(labelColor)
-                text = actionText(labelColor)
-            }
-            cancel?.apply {
-                background = pressable(shade, cancelRadius, palette)
-                setTextColor(Color.WHITE)
-            }
-            return
-        }
-
-        // Night: a neutral card, so the screen does not glow. The color stays on the kicker, the
-        // icon and the button, which is what the driver looks for.
+        // A neutral card in both modes, the way iOS groups content: the connection color stays on
+        // the kicker, the icon and the button, which is what the driver looks for.
         val strokePx = dp(context, 1)
-        card.background = shape(palette.panel, panelRadius, palette.panelStroke, strokePx)
+        card.background = shape(palette.tile, panelRadius, palette.panelStroke, strokePx)
         iconTile?.background = rounded(withAlpha(color, ACCENT_WASH_ALPHA), tileRadius)
         icon?.setColorFilter(color, PorterDuff.Mode.SRC_IN)
         kicker?.setTextColor(color)
@@ -658,7 +637,7 @@ object HomeUiHelper {
         cancel?.apply {
             background = pressable(
                 palette.ripple,
-                { shape(palette.tile, cancelRadius, palette.tileStroke, strokePx) },
+                { shape(palette.panel, cancelRadius, palette.tileStroke, strokePx) },
                 { shape(palette.tilePressed, cancelRadius, palette.tileStroke, strokePx) }
             )
             setTextColor(palette.text)
@@ -878,7 +857,6 @@ object HomeUiHelper {
         (rootView.findViewById<View>(R.id.home_primary_actions)?.parent as? View)?.width ?: 0
 
     private const val SCAN_SPIN_MS = 900L
-    private const val ACTION_TINT = 0.07f
     private const val BAND_WASH_ALPHA_DARK = 0x59
 
     /** What the main button leads with: the link for a connect, the arrow back to a session. */
@@ -929,16 +907,6 @@ object HomeUiHelper {
             icon.draw(canvas)
             canvas.restore()
         }
-    }
-
-    /** [from] moved [amount] (0..1) of the way to [to], channel by channel. */
-    private fun blend(@ColorInt from: Int, @ColorInt to: Int, amount: Float): Int {
-        fun ch(shift: Int): Int {
-            val a = (from shr shift) and 0xFF
-            val b = (to shr shift) and 0xFF
-            return (a + (b - a) * amount).toInt().coerceIn(0, 255)
-        }
-        return (0xFF shl 24) or (ch(16) shl 16) or (ch(8) shl 8) or ch(0)
     }
 
     private val WIFI_BARS = intArrayOf(

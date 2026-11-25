@@ -23,11 +23,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up JDK 17
+      # The wrapper and AGP 8.13 require JDK 17+; android-ci.yml uses 21, so match it.
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
           cache: gradle
 
       - name: Set up Android SDK
@@ -35,8 +36,19 @@ jobs:
         with:
           packages: ''
 
-      - name: Install required SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      # Without these the native aasdk build (app/src/main/cpp) fails: the NDK and CMake
+      # versions are pinned in app/build.gradle.kts and are not preinstalled on the runner.
+      # Retried because sdkmanager downloads occasionally arrive corrupt.
+      - name: Install pinned NDK and CMake
+        run: |
+          for attempt in 1 2 3; do
+            sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" \
+              "ndk;29.0.14206865" "cmake;3.22.1" && exit 0
+            echo "sdkmanager attempt $attempt failed; retrying in 15s..." >&2
+            sleep 15
+          done
+          echo "sdkmanager failed after 3 attempts" >&2
+          exit 1
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
