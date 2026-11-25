@@ -37,6 +37,14 @@
     <uses-feature
         android:name="android.hardware.wifi"
         android:required="false" />
+    <!-- Sideloaded onto Android TV boxes and televisions, which have neither a touchscreen nor
+         the leanback framework flag; both are optional so the APK installs there. -->
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
     <uses-feature
         android:name="android.hardware.location"
         android:required="false" />
@@ -161,11 +169,13 @@
             android:launchMode="singleTask"
             android:theme="@style/SplashTheme">
 
-            <!-- Primary Launcher Filter -->
+            <!-- Primary Launcher Filter; the leanback category is what puts the app on the
+                 Android TV home screen instead of only in the installed-apps list. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
